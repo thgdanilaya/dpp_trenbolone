@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('/templates/background.jpg');
+            background-size: cover;
+            overflow-y: hidden;
+        }
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 50px;
+            font-size: 4em;
+            top: 20%;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            background-color: #4a90e2;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #3570b0;
+        }
+        #fileUpload {
+            display: none;
+        }
+        label {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        label:hover {
+            background-color: #3570b0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Анализ и Оценка системы хранения данных</h1>
+    <label for="fileUpload" class="button">Выбрать файл</label>
+    <input type="file" id="fileUpload" />
+    <button id="analyzeButton" class="button">Анализ</button>
+    <p id="fileStatus"></p>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <p>Пожалуйста, выберите файл перед анализом.</p>
+        </div>
+    </div>
+
+    <script>
+        var fileUpload = document.getElementById('fileUpload');
+        var analyzeButton = document.getElementById('analyzeButton');
+        var fileStatus = document.getElementById('fileStatus');
+        var modal = document.getElementById('myModal');
+        var span = document.getElementsByClassName('close')[0];
+
+        fileUpload.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                fileStatus.textContent = 'Файл ' + file.name + ' загружен.';
+                var formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error));
+            } else {
+                fileStatus.textContent = 'Файл не выбран.';
+            }
+        });
+
+        analyzeButton.addEventListener('click', function() {
+            if (fileUpload.files.length > 0) {
+                window.location.href = '/analyze';
+            } else {
+                modal.style.display = 'block';
+            }
+        });
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
