@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         body {
             display: flex;
             flex-direction: column;
@@ -23,6 +37,15 @@
             background-color: #5a1279;
             border-radius: 10px;
         }
+        input[type="text"] {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            background-color: white;
+        }
         .button {
             margin: 10px;
             padding: 10px 20px;
@@ -35,20 +58,6 @@
             transition: background-color 0.3s ease;
         }
         .button:hover {
-            background-color: #3570b0;
-        }
-        #fileUpload {
-            display: none;
-        }
-        label {
-            padding: 10px 20px;
-            background-color: #4a90e2;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 10px;
-        }
-        label:hover {
             background-color: #3570b0;
         }
         .modal {
@@ -81,52 +90,59 @@
             text-decoration: none;
             cursor: pointer;
         }
-
     </style>
 </head>
 <body>
     <h1>Анализ и Оценка системы хранения данных</h1>
-    <label for="fileUpload" class="button">Выбрать файл</label>
-    <input type="file" id="fileUpload" />
-    <button id="analyzeButton" class="button">Анализ</button>
-    <p id="fileStatus"></p>
+    <input type="text" id="input1" placeholder="host" />
+    <input type="text" id="input2" placeholder="database" />
+    <input type="text" id="input3" placeholder="user" />
+    <input type="text" id="input4" placeholder="password" />
+    <input type="text" id="input5" placeholder="port" />
+    <button id="submitButton" class="button">Отправить</button>
+
+    <div id="loader" class="loader"></div> <!-- Значок ожидания -->
 
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">×</span>
-            <p>Пожалуйста, выберите файл перед анализом.</p>
+            <p>Пожалуйста, заполните все поля перед отправкой.</p>
         </div>
     </div>
 
     <script>
-        var fileUpload = document.getElementById('fileUpload');
-        var analyzeButton = document.getElementById('analyzeButton');
-        var fileStatus = document.getElementById('fileStatus');
+        var inputs = Array.from(document.querySelectorAll('input[type="text"]'));
+        var submitButton = document.getElementById('submitButton');
+        var loader = document.getElementById('loader'); // Значок ожидания
         var modal = document.getElementById('myModal');
         var span = document.getElementsByClassName('close')[0];
 
-        fileUpload.addEventListener('change', function() {
-            var file = this.files[0];
-            if (file) {
-                fileStatus.textContent = 'Файл ' + file.name + ' загружен.';
-                var formData = new FormData();
-                formData.append('file', file);
-
-                fetch('/upload', {
+        submitButton.addEventListener('click', function() {
+            var allFilled = inputs.every(function(input) {
+                return input.value !== '';
+            });
+            if (allFilled) {
+                var data = inputs.map(function(input) {
+                    return input.value;
+                });
+                loader.style.display = 'block'; // Показать значок ожидания
+                fetch('/submit', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
                 })
                 .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error(error));
-            } else {
-                fileStatus.textContent = 'Файл не выбран.';
-            }
-        });
-
-        analyzeButton.addEventListener('click', function() {
-            if (fileUpload.files.length > 0) {
-                window.location.href = '/analyze';
+                .then(data => {
+                    console.log(data);
+                    loader.style.display = 'none'; // Скрыть значок ожидания
+                    window.location.href = '/nextPage'; // Переход на следующую страницу после получения данных
+                })
+                .catch(error => {
+                    console.error(error);
+                    loader.style.display = 'none'; // Скрыть значок ожидания в случае ошибки
+                });
             } else {
                 modal.style.display = 'block';
             }
@@ -134,12 +150,6 @@
 
         span.onclick = function() {
             modal.style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
         }
     </script>
 </body>
