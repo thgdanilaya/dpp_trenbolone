@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <style>
+        <style>
         .loader {
             border: 16px solid #f3f3f3;
             border-radius: 50%;
@@ -23,7 +23,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('/background.jpg');
+            background-image: url('../static/background.jpg');
             background-size: cover;
             overflow-y: hidden;
         }
@@ -90,16 +90,37 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .submit-button {
+            display: flex;
+            justify-content: center;
+        }
+
+
     </style>
 </head>
 <body>
     <h1>Анализ и Оценка системы хранения данных</h1>
-    <input type="text" id="input1" placeholder="host" />
-    <input type="text" id="input2" placeholder="database" />
-    <input type="text" id="input3" placeholder="user" />
-    <input type="text" id="input4" placeholder="password" />
-    <input type="text" id="input5" placeholder="port" />
-    <button id="submitButton" class="button">Отправить</button>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.host(placeholder="Host") }}
+        </div>
+        <div>
+            {{ form.database(placeholder="Database") }}
+        </div>
+        <div>
+            {{ form.user(placeholder="User") }}
+        </div>
+        <div>
+            {{ form.password(placeholder="Password") }}
+        </div>
+        <div>
+            {{ form.port(placeholder="Port") }}
+        </div>
+        <div class="submit-button">
+            {{ form.submit(class="button") }}
+        </div>
+    </form>
 
     <div id="loader" class="loader"></div> <!-- Значок ожидания -->
 
@@ -111,40 +132,21 @@
     </div>
 
     <script>
-        var inputs = Array.from(document.querySelectorAll('input[type="text"]'));
-        var submitButton = document.getElementById('submitButton');
+        var submitButton = document.querySelector('input[type="submit"]');
         var loader = document.getElementById('loader'); // Значок ожидания
         var modal = document.getElementById('myModal');
         var span = document.getElementsByClassName('close')[0];
 
-        submitButton.addEventListener('click', function() {
+        submitButton.addEventListener('click', function(event) {
+            var inputs = Array.from(document.querySelectorAll('input[type="text"]'));
             var allFilled = inputs.every(function(input) {
                 return input.value !== '';
             });
-            if (allFilled) {
-                var data = inputs.map(function(input) {
-                    return input.value;
-                });
-                loader.style.display = 'block'; // Показать значок ожидания
-                fetch('/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    loader.style.display = 'none'; // Скрыть значок ожидания
-                    window.location.href = '/nextPage'; // Переход на следующую страницу после получения данных
-                })
-                .catch(error => {
-                    console.error(error);
-                    loader.style.display = 'none'; // Скрыть значок ожидания в случае ошибки
-                });
-            } else {
+            if (!allFilled) {
+                event.preventDefault();
                 modal.style.display = 'block';
+            } else {
+                loader.style.display = 'block'; // Показать значок ожидания
             }
         });
 
