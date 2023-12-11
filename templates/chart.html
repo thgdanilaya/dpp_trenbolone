@@ -6,36 +6,38 @@
 </head>
 <body>
     <h1>Анализ и Оценка системы хранения данных</h1>
+<canvas id="myChart"></canvas>
 
-    <canvas id="myChart"></canvas>
 
-    <script>
-        // Пример данных для графика
-        var labels = Array.from({{ range(iterations) }}, (_, i) => 'Iteration ' + (i + 1));
-        var data = Array(iterations).fill({{ average_time }});
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+    var labels = {{ iterations }};
+    var data = {{ average_times }};
 
-        // Создаем график
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Execution Time',
-                    data: data,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.map(String),
+            datasets: [{
+                label: 'Execution Time',
+                data: data,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
-    </script>
+        }
+    });
+    });
+</script>
+
 </body>
 </html>

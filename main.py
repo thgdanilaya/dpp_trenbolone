@@ -67,19 +67,27 @@ def index():
             'password': password,
             'port': port
         }
-        query = "SELECT * FROM your_table"
-        iterations = 10
-        average_time, iterations = measure_query_performance(query, iterations, db_params)
-        print(f"Average execution time over {iterations} iterations: {average_time} seconds")
-        return redirect(url_for('next_page'))
+        query = "SELECT * FROM courier_actions"
+        iterations_list = [10, 100, 1000]
+        average_times = []
+        for iterations in iterations_list:
+            average_time, _ = measure_query_performance(query, iterations, db_params)
+            average_times.append(average_time)
+        cms = ','.join([str(i) for i in iterations_list])
+        cms2 = ','.join([str(i) for i in average_times])
+        print(cms, cms2)
+        return redirect(url_for('chart', average_times=cms, iterations=cms2))
     return render_template('index.html', form=form)
 
 
 @app.route('/chart')
 def chart():
-    average_time = request.args.get('average_time', type=float)
-    iterations = request.args.get('iterations', type=int)
-    return render_template('chart.html', average_time=average_time, iterations=iterations)
+    params = request.args
+    average_times = [int(i) for i in params.get('average_times').split(",")]
+    iterations = [float(i) for i in params.get('iterations').split(",")]
+    print(average_times, iterations)
+    return render_template('chart.html', average_times=average_times, iterations=iterations)
+
 
 
 if __name__ == '__main__':
